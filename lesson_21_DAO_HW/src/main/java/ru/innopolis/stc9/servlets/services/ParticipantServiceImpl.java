@@ -11,18 +11,6 @@ public class ParticipantServiceImpl implements ParticipantService {
     ParticipantDAO participantDAO;
 
     @Override
-    public RegisteredStatus userStatus(Participant participant) {
-        logger.debug(START);
-        RegisteredStatus status = RegisteredStatus.UNVERIFIABLE;
-        if (participant != null) {
-            status = participant.getUser()==0 && participant.getEmail()==null?
-                    RegisteredStatus.UNREGISTERED:RegisteredStatus.REGISTERED;
-        }
-        logger.info("Success? "+(status!=RegisteredStatus.UNVERIFIABLE));
-        return status;
-    }
-
-    @Override
     public Participant findParticipant(String firstName, String lastName, String patronymic) {
         logger.debug(START);
         participantDAO = new ParticipantDAOImp();
@@ -40,12 +28,12 @@ public class ParticipantServiceImpl implements ParticipantService {
     }
 
     @Override
-    public int refreshParticipant(Participant participant, int user, String email, String phone) {
+    public int refreshParticipant(Participant participant, String email, String phone) {
         logger.debug(START);
         int result = 0;
         participantDAO = new ParticipantDAOImp();
-        result = participantDAO.upgradeParticipant(participant, user, email, phone);
+        result = participantDAO.upgradeParticipant(participant, email, phone);
         logger.info("Success? "+(result>0));
-        return 0;
+        return result;
     }
 }

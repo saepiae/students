@@ -15,7 +15,7 @@ public class ParticipantDAOImp implements ParticipantDAO {
     static final Logger logger = Logger.getLogger(ParticipantDAOImp.class);
     private static final String START = "Start";
     private static final String FINISH = "End";
-    private static final String INF = " object(s) of Participant";
+    private static final String INF = " object(s) of Person";
     private ConnectionManager connectionManager = new ConnectionManagerImpl();
 
     @Override
@@ -49,7 +49,7 @@ public class ParticipantDAOImp implements ParticipantDAO {
         Participant participant = null;
         try (Connection con = connectionManager.getConnection();
              PreparedStatement pst = con.prepareStatement(
-                     "SELECT * FROM participants WHERE item_user=?;")) {
+                     "SELECT * FROM participants WHERE id=?;")) {
             pst.setInt(1, user);
             try (ResultSet rs = pst.executeQuery()){
                 if (rs.next()) {
@@ -74,22 +74,20 @@ public class ParticipantDAOImp implements ParticipantDAO {
                 rs.getString("patronymic"),
                 rs.getString("email"),
                 rs.getString("phone"),
-                Role.valueOf(rs.getObject("role").toString()),
-                rs.getInt("item_user")
+                Role.valueOf(rs.getObject("role").toString())
         );
     }
 
     @Override
-    public int upgradeParticipant(Participant participant, int user, String email, String phone) {
+    public int upgradeParticipant(Participant participant, String email, String phone) {
         logger.debug(START);
         int result = 0;
         try (Connection con = connectionManager.getConnection();
              PreparedStatement pst = con.prepareStatement(
-                     "UPDATE participants SET item_user=?, email=?, phone=? WHERE id=? RETURNING id;")) {
-            pst.setInt(1, user);
-            pst.setString(2, email);
-            pst.setString(3, phone);
-            pst.setInt(4, participant.getId());
+                     "UPDATE participants SET email=?, phone=? WHERE id=? RETURNING id;")) {
+            pst.setString(1, email);
+            pst.setString(2, phone);
+            pst.setInt(3, participant.getId());
             try (ResultSet rs = pst.executeQuery()){
                 if (rs.next()) {
                     result = rs.getInt("id");
@@ -111,7 +109,7 @@ public class ParticipantDAOImp implements ParticipantDAO {
         Role result = Role.NO_SUCH_USER;
         try (Connection con = connectionManager.getConnection();
              PreparedStatement pst = con.prepareStatement(
-                     "SELECT role FROM participants WHERE item_user = ?;")) {
+                     "SELECT role FROM participants WHERE id = ?;")) {
             pst.setInt(1, item);
             try (ResultSet rs = pst.executeQuery()){
                 if (rs.next()) {

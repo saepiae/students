@@ -5,8 +5,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 public class ConnectionManagerImplTest extends Assert{
     private Logger logger = Logger.getLogger(ConnectionManagerImplTest.class);
     private ConnectionManagerImpl connectionManager;
@@ -21,7 +19,7 @@ public class ConnectionManagerImplTest extends Assert{
      */
     @Test
     public void getConnection() {
-        logger.info("Test: get connection with database.");
+        logger.info("Test: getByStudent connection with database.");
         Assert.assertNotNull(connectionManager.getConnection());
     }
 }

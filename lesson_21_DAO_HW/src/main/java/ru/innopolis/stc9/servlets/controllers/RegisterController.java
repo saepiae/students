@@ -2,7 +2,11 @@ package ru.innopolis.stc9.servlets.controllers;
 
 import org.apache.log4j.Logger;
 import ru.innopolis.stc9.servlets.pojo.Participant;
-import ru.innopolis.stc9.servlets.services.*;
+import ru.innopolis.stc9.servlets.pojo.User;
+import ru.innopolis.stc9.servlets.services.ParticipantService;
+import ru.innopolis.stc9.servlets.services.ParticipantServiceImpl;
+import ru.innopolis.stc9.servlets.services.UserService;
+import ru.innopolis.stc9.servlets.services.UserServiceImp;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -39,26 +43,24 @@ public class RegisterController extends HttpServlet {
         if (isCorrectInputs(firstName, lastName, patronymic, email, phone, login, password1, password2)) {
             ParticipantService participantService = new ParticipantServiceImpl();
             Participant participant = participantService.findParticipant(firstName, lastName, patronymic);
-            RegisteredStatus status = participantService.userStatus(participant);
-            switch (status){
-                case UNREGISTERED:
-                    UserService userService = new UserServiceImp();
-                    int idUser = userService.addUser(login, password1);
-                    int id = participantService.refreshParticipant(participant, idUser, email, phone);
-//                    participantService
-                    if (id>0){
+
+            if (participant != null) {
+                UserService userService = new UserServiceImp();
+                User user = userService.getByParticipantId(participant.getId());
+                if (user != null) {
+                    resp.sendRedirect(req.getContextPath() + "/register?act=recovery");
+                } else {
+                    int id = participantService.refreshParticipant(participant, email, phone);
+                    userService.addUser(id, login, password1);
+                    if (id > 0) {
                         req.getSession().setAttribute("participant", participant);
-                    }else {
+                    } else {
                         logger.warn("данные не обновились");
                     }
                     resp.sendRedirect(req.getContextPath() + "/login");
-                    break;
-                case REGISTERED:
-                    resp.sendRedirect(req.getContextPath() + "/register?act=recovery");
-                    break;
-                case UNVERIFIABLE:
-                    resp.sendRedirect(req.getContextPath() + "/register?errorMsg=moderErr");
-                    break;
+                }
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/register?errorMsg=moderErr");
             }
         } else {
             resp.sendRedirect(req.getContextPath() + "/register?errorMsg=wrongForm");
@@ -70,8 +72,8 @@ public class RegisterController extends HttpServlet {
         logger.debug(START);
         boolean result = validateString(firstName) &&
                 validateString(lastName) &&
-                validateString(patronymic, 0)&&
-                validateString(email,3) &&
+                validateString(patronymic, 0) &&
+                validateString(email, 3) &&
                 validateString(phone, 0) &&
                 validateString(login) &&
                 validateString(password, MIN_PASSWORD_LENGTH) &&
@@ -81,12 +83,14 @@ public class RegisterController extends HttpServlet {
         return result;
     }
 
-    private boolean validateString(String s, int minLength){
-        return s!=null && s.length()>=minLength;
+    private boolean validateString(String s, int minLength) {
+        return s != null && s.length() >= minLength;
     }
-    private boolean validateString(String s){
+
+    private boolean validateString(String s) {
         return validateString(s, 1);
     }
+
     private String getMessage(HttpServletRequest req) {
         String message;
         if (req.getParameter("errorMsg") != null) {
@@ -115,10 +119,12 @@ public class RegisterController extends HttpServlet {
         }
         return message;
     }
+
     private void debud(String s) {
         logger.debug(s);
     }
+
     private void info(boolean b) {
-        logger.info("Success? "+b);
+        logger.info("Success? " + b);
     }
 }

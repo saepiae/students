@@ -2,10 +2,11 @@ package ru.innopolis.stc9.servlets.controllers;
 
 import org.apache.log4j.Logger;
 import ru.innopolis.stc9.servlets.pojo.Participant;
-import ru.innopolis.stc9.servlets.services.ParticipantService;
-import ru.innopolis.stc9.servlets.services.ParticipantServiceImpl;
-import ru.innopolis.stc9.servlets.services.UserService;
-import ru.innopolis.stc9.servlets.services.UserServiceImp;
+import ru.innopolis.stc9.servlets.pojo.Role;
+import ru.innopolis.stc9.servlets.pojo.User;
+import ru.innopolis.stc9.servlets.services.*;
+import ru.innopolis.stc9.servlets.services.builder.BuilderStudent;
+import ru.innopolis.stc9.servlets.services.builder.BuilderTeacher;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -20,7 +21,7 @@ public class LoginController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String action = req.getParameter("act");
-        if ("out".equals(action)){
+        if ("out".equals(action)) {
             req.getSession().invalidate();
         }
         req.setAttribute("message", "instruct");
@@ -55,12 +56,34 @@ public class LoginController extends HttpServlet {
             UserService userService = new UserServiceImp();
             int id = userService.checkAuth(login, password);
             if (id > 0) {
-                req.getSession().setAttribute("user", id);
+                User user = userService.getByParticipantId(id);
+                req.getSession().setAttribute("user", user);
                 ParticipantService participantService = new ParticipantServiceImpl();
                 Participant participant = participantService.findParticipantByUser(id);
-                req.getSession().setAttribute("userFName",participant.getFirstName());
-                req.getSession().setAttribute("userLName",participant.getLastName());
-                req.getSession().setAttribute("role", userService.getRole(id));
+                // TODO: 15.05.2018 переделать на participant
+                Role role = userService.getUserRole(id);
+                req.getSession().setAttribute("role", role);
+                Director director = new Director();
+                switch (role) {
+                    case STUDENT:
+                        BuilderStudent student = new BuilderStudent();
+                        director.createStudent(student, user);
+                        req.getSession().setAttribute("data", student);
+                        break;
+                    case TEACHER:
+                        BuilderTeacher teacher = new BuilderTeacher();
+                        director.createTeacher(teacher, user);
+                        req.getSession().setAttribute("data", teacher);
+                        break;
+                    case ADMIN:
+                        // TODO: 21.05.2018 сделать логику для админа
+                        break;
+                    default:
+                        // TODO: 21.05.2018 придумать тут что делать
+                }
+//                req.getSession().setAttribute("participant", participant);
+//                req.getSession().setAttribute("userFName",participant.getFirstName());
+//                req.getSession().setAttribute("userLName",participant.getLastName());
                 resp.sendRedirect(req.getContextPath() + "/inner/schedule");
             } else {
                 logger.debug(req.getContextPath());
@@ -69,31 +92,5 @@ public class LoginController extends HttpServlet {
         } else {
             resp.sendRedirect(req.getContextPath() + "/login?errorMsg=invData");
         }
-    }
-
-    /**
-     * По роли участника определяем, куда его перенаправить.
-     * @param userService
-     * @param id
-     * @return
-     */
-    private String selectRedirect(UserService userService, int id) {
-        String result;
-        switch (userService.getRole(id)) {
-            case ADMIN:
-                result = "/admin/dashboard";
-                break;
-            case TEACHER:
-                result = "/teacher/dashboard";
-                break;
-            case STUDENT:
-                result = "/student/dashboard";
-                break;
-            default:
-                logger.warn("something went wrong");
-        }
-        result = "/dashboard?errorMsg=noUser";
-        logger.info(result);
-        return result;
     }
 }

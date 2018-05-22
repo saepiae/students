@@ -8,11 +8,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@page import="org.apache.log4j.Logger" %>
 <%! static Logger logger = Logger.getLogger(register_jsp.class); %>
-<html>
-<head>
-    <title>Регистрация</title>
-</head>
-<body>
+
+<%@ include file="header.jsp" %>
 <% logger.debug("Start open page"); %>
 <%=request.getAttribute("message") + "<br>"%>
 <form action="${pageContext.request.contextPath}/register" method="post">
@@ -54,12 +51,12 @@
         </tr>
         <tr>
             <td>
-                <input type="password" value="" name="password1" placeholder="пароль"><br> <sup>*</sup>
+                <input type="password" value="" name="password1" placeholder="пароль"> <sup>*</sup>
             </td>
         </tr>
         <tr>
             <td>
-                <input type="password" value="" name="password2" placeholder="повторите пароль"><br> <sup>*</sup>
+                <input type="password" value="" name="password2" placeholder="повторите пароль"><sup>*</sup>
             </td>
         </tr>
 
@@ -71,5 +68,5 @@
     <input type="submit" value="OK">
 </form>
 <% logger.debug("End open page"); %>
-</body>
-</html>
+<%@ include file="sidebar.jsp" %>
+<%@ include file="footer.jsp" %>

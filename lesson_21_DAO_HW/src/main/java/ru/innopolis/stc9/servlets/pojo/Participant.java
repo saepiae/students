@@ -2,13 +2,12 @@ package ru.innopolis.stc9.servlets.pojo;
 
 import org.apache.log4j.Logger;
 
-import java.io.Serializable;
 import java.util.Objects;
 
 /**
  * Таблица участников учебного процесса
  */
-public class Participant implements Serializable{
+public class Participant {
     static final Logger logger = Logger.getLogger(Participant.class);
     private int id;
     private String firstName;
@@ -17,10 +16,9 @@ public class Participant implements Serializable{
     private String email;
     private String phone;
     private Role role;
-    private int user;
 
     public Participant(int id, String firstName, String lastName, String patronymic,
-                       String email, String phone, Role role, int user) {
+                       String email, String phone, Role role) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -28,7 +26,6 @@ public class Participant implements Serializable{
         this.email = email;
         this.phone = phone;
         this.role = role;
-        this.user = user;
     }
 
     public int getId() {
@@ -59,10 +56,6 @@ public class Participant implements Serializable{
         return role;
     }
 
-    public int getUser() {
-        return user;
-    }
-
     public void setId(int id) {
         this.id = id;
     }
@@ -91,17 +84,12 @@ public class Participant implements Serializable{
         this.role = role;
     }
 
-    public void setUser(int user) {
-        this.user = user;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Participant that = (Participant) o;
         boolean result = id == that.id &&
-                user == that.user &&
                 Objects.equals(firstName, that.firstName) &&
                 Objects.equals(lastName, that.lastName) &&
                 Objects.equals(patronymic, that.patronymic) &&
@@ -114,21 +102,20 @@ public class Participant implements Serializable{
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(id, firstName, lastName, patronymic, email, phone, role, user);
+        int result = Objects.hash(id, firstName, lastName, patronymic, email, phone, role);
         logger.debug("hashcode = " + result);
         return result;
     }
 
     @Override
     public String toString() {
-        String result = "Participant{" + id +
+        String result = "Person{" + id +
                 ", " + firstName +
                 ", " + lastName +
                 ", " + patronymic +
                 ", " + email +
                 ", " + phone +
                 ", " + role +
-                ", " + user +
                 '}';
         logger.debug("result = "+result);
         return result;
